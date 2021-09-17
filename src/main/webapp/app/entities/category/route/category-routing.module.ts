@@ -21,8 +21,7 @@ const categoryRoute: Routes = [
     component: CategoryDetailComponent,
     resolve: {
       category: CategoryRoutingResolveService,
-    },
-    canActivate: [UserRouteAccessService],
+    }
   },
   {
     path: 'new',

@@ -1,0 +1,10 @@
+:host {
+  display: block;
+  .category-item-posts {
+    overflow-x: auto;
+
+    jhi-post-item {
+      flex-shrink: 0;
+    }
+  }
+}

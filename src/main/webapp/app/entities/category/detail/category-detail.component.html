@@ -1,32 +1,30 @@
 <div class="row justify-content-center">
-  <div class="col-8">
+  <div class="col-md-10 m-auto">
     <div *ngIf="category">
-      <h2 data-cy="categoryDetailsHeading"><span jhiTranslate="newsApp.category.detail.title">Category</span></h2>
-
+      <div class="row align-items-center">
+        <button type="submit" (click)="previousState()" class="btn mr-2 align-self-start"
+          data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left"></fa-icon>
+        </button>
+        <h2 data-cy="categoryDetailsHeading">{{category.name}}</h2>
+      </div>
       <hr />
+      <div class="row">
+        <div class="col-lg-4 col-md-6 mb-4 d-flex align-items-stretch" *ngFor="let post of posts">
+          <jhi-post-item class="home-post" [post]=post></jhi-post-item>
+        </div>
+      </div>
+    </div>
 
-      <jhi-alert-error></jhi-alert-error>
+    <div *ngIf="posts && posts.length > 0">
+      <div class="row justify-content-center">
+        <jhi-item-count [params]="{ page: page, totalItems: totalItems, itemsPerPage: itemsPerPage }"></jhi-item-count>
+      </div>
 
-      <jhi-alert></jhi-alert>
-
-      <dl class="row-md jh-entity-details">
-        <dt><span jhiTranslate="global.field.id">ID</span></dt>
-        <dd>
-          <span>{{ category.id }}</span>
-        </dd>
-        <dt><span jhiTranslate="newsApp.category.name">Name</span></dt>
-        <dd>
-          <span>{{ category.name }}</span>
-        </dd>
-      </dl>
-
-      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
-        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Back</span>
-      </button>
-
-      <button type="button" [routerLink]="['/category', category.id, 'edit']" class="btn btn-primary">
-        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Edit</span>
-      </button>
+      <div class="row justify-content-center">
+        <ngb-pagination [collectionSize]="totalItems" [(page)]="ngbPaginationPage" [pageSize]="itemsPerPage"
+          [maxSize]="5" [rotate]="true" [boundaryLinks]="true" (pageChange)="loadPage($event)"></ngb-pagination>
+      </div>
     </div>
   </div>
 </div>

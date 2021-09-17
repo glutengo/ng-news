@@ -8,6 +8,7 @@ export interface IPost {
   coverImageUrl?: string | null;
   author?: IUser | null;
   category?: ICategory | null;
+  excerpt?: string | null;
 }
 
 export class Post implements IPost {
@@ -17,7 +18,8 @@ export class Post implements IPost {
     public content?: string | null,
     public coverImageUrl?: string | null,
     public author?: IUser | null,
-    public category?: ICategory | null
+    public category?: ICategory | null,
+    public excerpt?: string | null
   ) {}
 }
 

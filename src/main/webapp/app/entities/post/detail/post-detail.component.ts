@@ -6,6 +6,7 @@ import { IPost } from '../post.model';
 @Component({
   selector: 'jhi-post-detail',
   templateUrl: './post-detail.component.html',
+  styleUrls: ['./post-detail.component.scss']
 })
 export class PostDetailComponent implements OnInit {
   post: IPost | null = null;

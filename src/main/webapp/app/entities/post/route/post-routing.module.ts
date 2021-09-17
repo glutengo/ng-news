@@ -21,8 +21,7 @@ const postRoute: Routes = [
     component: PostDetailComponent,
     resolve: {
       post: PostRoutingResolveService,
-    },
-    canActivate: [UserRouteAccessService],
+    }
   },
   {
     path: 'new',

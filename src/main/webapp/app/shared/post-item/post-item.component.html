@@ -1,0 +1,7 @@
+<img class="post-item-image" [src]="post.coverImageUrl"/>
+<div class="post-data">
+  <h4 class="post-item-title"><a [routerLink]="['/post', post.id, 'view']">{{post.title}}</a></h4>
+  <span class="post-item-author" *ngIf="post.author">published by <i>{{post.author.login}}</i></span>
+  <span class="post-item-category" *ngIf="post.category">in <i>{{post.category.name}}</i></span>
+  <p class="post-item-excerpt py-2 mb-0" *ngIf="post.excerpt">{{post.excerpt}}...</p>
+</div>
