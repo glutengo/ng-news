@@ -29,7 +29,11 @@ export class CategoryGraphQLService {
     private deleteCategoryGQL: DeleteCategoryGQL
   ) {}
 
-  query(req?: any): Observable<EntityArrayResponseType> {
+  query(req: any = { includePosts: false }): Observable<EntityArrayResponseType> {
+    if (req.includePosts) {
+      req.takePosts = req.includePosts;
+      req.includePosts = true;
+    }
     return this.getCategoriesGQL
       .fetch(this.graphQLUtils.createGraphQlOption(req), { fetchPolicy: req?.bypassCache ? 'no-cache' : 'cache-first' })
       .pipe(map(result => this.graphQLUtils.toPagedHttpResponse(result.data.result)));

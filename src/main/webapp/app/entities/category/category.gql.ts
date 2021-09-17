@@ -9,13 +9,15 @@ import {
   MutationDeleteCategoryArgs,
   MutationUpdateCategoryArgs,
   PaginatedCategory,
-  Category,
   CategoryEdge,
   Query,
   QueryGetCategoryArgs,
   UpdateCategoryArgsImpl,
+  Post,
+  CategoryPostsArgs,
+  Category,
 } from 'app/graphql';
-import { BaseCategory, DetailCategory, PaginationVars } from 'app/graphql/graphql.common-types';
+import { BaseCategory, BasePost, DetailCategory, ListPost, PaginationVars } from 'app/graphql/graphql.common-types';
 
 @ArgsType()
 class GetCategoryVars implements QueryGetCategoryArgs {
@@ -25,15 +27,27 @@ class GetCategoryVars implements QueryGetCategoryArgs {
 @ObjectType()
 class GetCategoryQuery {
   @Field<Query, GetCategoryVars>({ aliasFor: 'getCategory' })
-  result!: DetailCategory;
+  result!: BaseCategory;
 }
 
 @ArgsType()
 class GetCategoriesVars extends PaginationVars {}
 
+@ArgsType()
+class GetCategoriesQueryVars extends PaginationVars {
+  includePosts!: boolean;
+  takePosts?: number;
+}
+
+@ObjectType()
+class CategoryWithPosts extends BaseCategory implements Partial<Category>{
+  @Field<Post, CategoryPostsArgs, GetCategoriesQueryVars>({include: '$includePosts', args: { take: '$takePosts' }})
+  posts!: ListPost[]
+}
+
 @ObjectType()
 class CategoryEdgeResult implements Partial<CategoryEdge> {
-  node!: DetailCategory;
+  node!: CategoryWithPosts;
 }
 
 @ObjectType()
@@ -82,7 +96,7 @@ class DeleteCategoryMutation {
 }
 
 export const GetCategoryDocument = buildQuery(GetCategoryQuery, GetCategoryVars);
-export const GetCategoriesDocument = buildQuery(GetCategoriesQuery, GetCategoriesVars);
+export const GetCategoriesDocument = buildQuery(GetCategoriesQuery, GetCategoriesQueryVars);
 export const CreateCategoryDocument = buildMutation(CreateCategoryMutation, CreateCategoryVars);
 export const UpdateCategoryDocument = buildMutation(UpdateCategoryMutation, UpdateCategoryVars);
 export const DeleteCategoryDocument = buildMutation(DeleteCategoryMutation, DeleteCategoryVars);
@@ -97,7 +111,7 @@ export class GetCategoryGQL extends Apollo.Query<GetCategoryQuery, GetCategoryVa
 }
 
 @Injectable({ providedIn: 'root' })
-export class GetCategoriesGQL extends Apollo.Query<GetCategoriesQuery, GetCategoriesVars> {
+export class GetCategoriesGQL extends Apollo.Query<GetCategoriesQuery, GetCategoriesQueryVars> {
   document = GetCategoriesDocument;
 
   constructor(apollo: Apollo.Apollo) {
@@ -132,4 +146,4 @@ export class DeleteCategoryGQL extends Apollo.Mutation<DeleteCategoryMutation, D
   }
 }
 
-const usedClasses = [CreateCategoryArgsImpl, UpdateCategoryArgsImpl];
+const usedClasses = [CreateCategoryArgsImpl, UpdateCategoryArgsImpl, ListPost];
