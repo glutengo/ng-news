@@ -6,6 +6,7 @@ import { isPresent } from 'app/core/util/operators';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { createRequestOption } from 'app/core/request/request-util';
 import { IPost, getPostIdentifier } from '../post.model';
+import { EXCERPT_LENGTH } from 'app/config/pagination.constants';
 
 export type EntityResponseType = HttpResponse<IPost>;
 export type EntityArrayResponseType = HttpResponse<IPost[]>;
@@ -33,7 +34,7 @@ export class PostService {
   }
 
   query(req?: any): Observable<EntityArrayResponseType> {
-    const options = createRequestOption(req);
+    const options = createRequestOption({ ...req, excerptLength: EXCERPT_LENGTH }) as any;
     return this.http.get<IPost[]>(this.resourceUrl, { params: options, observe: 'response' });
   }
 

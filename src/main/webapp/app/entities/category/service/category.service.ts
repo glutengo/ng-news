@@ -6,6 +6,7 @@ import { isPresent } from 'app/core/util/operators';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { createRequestOption } from 'app/core/request/request-util';
 import { ICategory, getCategoryIdentifier } from '../category.model';
+import { EXCERPT_LENGTH } from 'app/config/pagination.constants';
 
 export type EntityResponseType = HttpResponse<ICategory>;
 export type EntityArrayResponseType = HttpResponse<ICategory[]>;
@@ -35,7 +36,7 @@ export class CategoryService {
   }
 
   query(req?: any): Observable<EntityArrayResponseType> {
-    const options = createRequestOption(req);
+    const options = createRequestOption({ ...req, postExcerptLength: EXCERPT_LENGTH }) as any;
     return this.http.get<ICategory[]>(this.resourceUrl, { params: options, observe: 'response' });
   }
 
