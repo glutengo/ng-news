@@ -28,6 +28,11 @@ export type Category = {
   posts?: Maybe<Array<Post>>;
 };
 
+
+export type CategoryPostsArgs = {
+  take?: Maybe<Scalars['Int']>;
+};
+
 export type CategoryEdge = {
   cursor?: Maybe<Scalars['String']>;
   node: Category;
@@ -210,6 +215,7 @@ export type QueryGetPostsArgs = {
   page?: Maybe<Scalars['Int']>;
   size?: Maybe<Scalars['Int']>;
   sort?: Maybe<Scalars['String']>;
+  category?: Maybe<Scalars['Int']>;
 };
 
 
@@ -324,12 +330,17 @@ export type GetCategoriesQueryVariables = Exact<{
   page?: Maybe<Scalars['Int']>;
   size?: Maybe<Scalars['Int']>;
   sort?: Maybe<Scalars['String']>;
+  includePosts?: Maybe<Scalars['Boolean']>;
+  takePosts?: Maybe<Scalars['Int']>;
 }>;
 
 
 export type GetCategoriesQuery = { result: (
     Pick<PaginatedCategory, 'totalCount'>
-    & { edges: Array<{ node: DetailCategoryFragment }> }
+    & { edges: Array<{ node: (
+        { posts?: Maybe<Array<ListPostFragment>> }
+        & BaseCategoryFragment
+      ) }> }
   ) };
 
 export type GetCategoryQueryVariables = Exact<{
@@ -337,7 +348,7 @@ export type GetCategoryQueryVariables = Exact<{
 }>;
 
 
-export type GetCategoryQuery = { result: DetailCategoryFragment };
+export type GetCategoryQuery = { result: BaseCategoryFragment };
 
 export type DeleteCategoryMutationVariables = Exact<{
   id: Scalars['Int'];
@@ -362,18 +373,22 @@ export type UpdateCategoryMutation = { result: DetailCategoryFragment };
 
 export type BaseCategoryFragment = Pick<Category, 'id' | 'name'>;
 
-export type DetailCategoryFragment = BaseCategoryFragment;
+export type DetailCategoryFragment = (
+  { posts?: Maybe<Array<BasePostFragment>> }
+  & BaseCategoryFragment
+);
 
 export type GetPostsQueryVariables = Exact<{
   page?: Maybe<Scalars['Int']>;
   size?: Maybe<Scalars['Int']>;
   sort?: Maybe<Scalars['String']>;
+  category?: Maybe<Scalars['Int']>;
 }>;
 
 
 export type GetPostsQuery = { result: (
     Pick<PaginatedPost, 'totalCount'>
-    & { edges: Array<{ node: DetailPostFragment }> }
+    & { edges: Array<{ node: ListPostFragment }> }
   ) };
 
 export type GetPostQueryVariables = Exact<{
@@ -404,11 +419,20 @@ export type UpdatePostMutationVariables = Exact<{
 
 export type UpdatePostMutation = { result: DetailPostFragment };
 
-export type BasePostFragment = Pick<Post, 'id' | 'title' | 'content' | 'coverImageUrl'>;
+export type BasePostFragment = Pick<Post, 'id' | 'title' | 'coverImageUrl'>;
+
+export type PostRelationsFragment = { author?: Maybe<Pick<User, 'id' | 'login'>>, category?: Maybe<Pick<Category, 'id' | 'name'>> };
 
 export type DetailPostFragment = (
-  { author?: Maybe<Pick<User, 'id' | 'login'>>, category?: Maybe<Pick<Category, 'id' | 'name'>> }
+  Pick<Post, 'content'>
   & BasePostFragment
+  & PostRelationsFragment
+);
+
+export type ListPostFragment = (
+  { excerpt: Post['content'] }
+  & BasePostFragment
+  & PostRelationsFragment
 );
 
 export type GetUsersQueryVariables = Exact<{
@@ -469,22 +493,24 @@ export const BaseCategoryFragmentDoc = gql`
   name
 }
     `;
-export const DetailCategoryFragmentDoc = gql`
-    fragment DetailCategory on Category {
-  ...BaseCategory
-}
-    ${BaseCategoryFragmentDoc}`;
 export const BasePostFragmentDoc = gql`
     fragment BasePost on Post {
   id
   title
-  content
   coverImageUrl
 }
     `;
-export const DetailPostFragmentDoc = gql`
-    fragment DetailPost on Post {
-  ...BasePost
+export const DetailCategoryFragmentDoc = gql`
+    fragment DetailCategory on Category {
+  ...BaseCategory
+  posts {
+    ...BasePost
+  }
+}
+    ${BaseCategoryFragmentDoc}
+${BasePostFragmentDoc}`;
+export const PostRelationsFragmentDoc = gql`
+    fragment PostRelations on Post {
   author {
     id
     login
@@ -494,7 +520,23 @@ export const DetailPostFragmentDoc = gql`
     name
   }
 }
-    ${BasePostFragmentDoc}`;
+    `;
+export const DetailPostFragmentDoc = gql`
+    fragment DetailPost on Post {
+  ...BasePost
+  ...PostRelations
+  content
+}
+    ${BasePostFragmentDoc}
+${PostRelationsFragmentDoc}`;
+export const ListPostFragmentDoc = gql`
+    fragment ListPost on Post {
+  ...BasePost
+  ...PostRelations
+  excerpt: content(length: 50)
+}
+    ${BasePostFragmentDoc}
+${PostRelationsFragmentDoc}`;
 export const BaseUserFragmentDoc = gql`
     fragment BaseUser on User {
   login
@@ -516,17 +558,21 @@ export const DetailUserFragmentDoc = gql`
 }
     ${BaseUserFragmentDoc}`;
 export const GetCategoriesDocument = gql`
-    query getCategories($page: Int, $size: Int, $sort: String) {
+    query getCategories($page: Int, $size: Int, $sort: String, $includePosts: Boolean = false, $takePosts: Int) {
   result: getCategories(page: $page, size: $size, sort: $sort) {
     edges {
       node {
-        ...DetailCategory
+        ...BaseCategory
+        posts(take: $takePosts) @include(if: $includePosts) {
+          ...ListPost
+        }
       }
     }
     totalCount
   }
 }
-    ${DetailCategoryFragmentDoc}`;
+    ${BaseCategoryFragmentDoc}
+${ListPostFragmentDoc}`;
 
   @Injectable({
     providedIn: 'root'
@@ -541,10 +587,10 @@ export const GetCategoriesDocument = gql`
 export const GetCategoryDocument = gql`
     query getCategory($id: Int!) {
   result: getCategory(id: $id) {
-    ...DetailCategory
+    ...BaseCategory
   }
 }
-    ${DetailCategoryFragmentDoc}`;
+    ${BaseCategoryFragmentDoc}`;
 
   @Injectable({
     providedIn: 'root'
@@ -609,17 +655,17 @@ export const UpdateCategoryDocument = gql`
     }
   }
 export const GetPostsDocument = gql`
-    query getPosts($page: Int, $size: Int, $sort: String) {
-  result: getPosts(page: $page, size: $size, sort: $sort) {
+    query getPosts($page: Int, $size: Int, $sort: String, $category: Int) {
+  result: getPosts(page: $page, size: $size, sort: $sort, category: $category) {
     edges {
       node {
-        ...DetailPost
+        ...ListPost
       }
     }
     totalCount
   }
 }
-    ${DetailPostFragmentDoc}`;
+    ${ListPostFragmentDoc}`;
 
   @Injectable({
     providedIn: 'root'
