@@ -12,10 +12,16 @@ function setupProxy() {
         '/h2-console',
         '/auth',
         '/health',
+        '/graphql',
       ],
       target: `http${tls ? 's' : ''}://localhost:8080`,
       secure: false,
       changeOrigin: tls,
+    },
+    {
+      context: ['/graphql'],
+      target: 'ws' + (tls ? 's' : '') + '://localhost:8080',
+      ws: true,
     },
   ];
   return conf;

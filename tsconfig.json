@@ -10,7 +10,7 @@
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
     "outDir": "target/classes/static/app",
-    "lib": ["es2018", "dom"],
+    "lib": ["es2018", "dom", "esnext.asynciterable"],
     "baseUrl": "./",
     "paths": {
       "app/*": ["src/main/webapp/app/*"]
@@ -18,7 +18,8 @@
     "importHelpers": true,
     "downlevelIteration": true,
     "declaration": false,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "emitDecoratorMetadata": true
   },
   "angularCompilerOptions": {
     "strictInjectionParameters": true,
