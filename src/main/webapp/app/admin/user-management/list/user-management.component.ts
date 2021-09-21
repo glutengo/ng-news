@@ -57,13 +57,14 @@ export class UserManagementComponent implements OnInit {
     });
   }
 
-  loadAll(): void {
+  loadAll(bypassCache?: boolean): void {
     this.isLoading = true;
     this.userService
       .query({
         page: this.page - 1,
         size: this.itemsPerPage,
         sort: this.sort(),
+        bypassCache,
       })
       .subscribe(
         (res: HttpResponse<User[]>) => {

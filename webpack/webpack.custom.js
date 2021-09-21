@@ -1,13 +1,23 @@
 const webpack = require('webpack');
+
 const { merge } = require('webpack-merge');
+
 const path = require('path');
+
 const MergeJsonWebpackPlugin = require('merge-jsons-webpack-plugin');
+
 const SimpleProgressWebpackPlugin = require('simple-progress-webpack-plugin');
+
 const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
+
 const BrowserSyncPlugin = require('browser-sync-webpack-plugin');
+
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+
 const WebpackNotifierPlugin = require('webpack-notifier');
+
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+
 const ESLintPlugin = require('eslint-webpack-plugin');
 
 const tls = process.env.TLS;
@@ -25,6 +35,7 @@ module.exports = (config, options, targetOptions) => {
         contentImage: path.join(__dirname, 'logo-jhipster.png'),
       })
     );
+
     if (!process.env.JHI_DISABLE_WEBPACK_LOGS) {
       config.plugins.push(
         new SimpleProgressWebpackPlugin({
@@ -33,6 +44,7 @@ module.exports = (config, options, targetOptions) => {
       );
     }
   }
+
   if (targetOptions.target === 'serve' || config.watch) {
     config.plugins.push(
       new BrowserSyncPlugin(
@@ -45,6 +57,7 @@ module.exports = (config, options, targetOptions) => {
             proxyOptions: {
               changeOrigin: false, //pass the Host header to the backend unchanged  https://github.com/Browsersync/browser-sync/issues/430
             },
+            ws: true,
           },
           socket: {
             clients: {
@@ -52,13 +65,13 @@ module.exports = (config, options, targetOptions) => {
             },
           },
           /*
-          ghostMode: { // uncomment this part to disable BrowserSync ghostMode; https://github.com/jhipster/generator-jhipster/issues/11116
-            clicks: false,
-            location: false,
-            forms: false,
-            scroll: false,
-          },
-          */
+      ghostMode: { // uncomment this part to disable BrowserSync ghostMode; https://github.com/jhipster/generator-jhipster/issues/11116
+        clicks: false,
+        location: false,
+        forms: false,
+        scroll: false,
+      },
+      */
         },
         {
           reload: targetOptions.target === 'build', // enabled for build --watch
@@ -87,7 +100,11 @@ module.exports = (config, options, targetOptions) => {
   ];
 
   if (patterns.length > 0) {
-    config.plugins.push(new CopyWebpackPlugin({ patterns }));
+    config.plugins.push(
+      new CopyWebpackPlugin({
+        patterns,
+      })
+    );
   }
 
   config.plugins.push(
@@ -107,17 +124,17 @@ module.exports = (config, options, targetOptions) => {
     new MergeJsonWebpackPlugin({
       output: {
         groupBy: [
-          { pattern: './src/main/webapp/i18n/en/*.json', fileName: './i18n/en.json' },
-          // jhipster-needle-i18n-language-webpack - JHipster will add/remove languages in this array
+          {
+            pattern: './src/main/webapp/i18n/en/*.json',
+            fileName: './i18n/en.json',
+          }, // jhipster-needle-i18n-language-webpack - JHipster will add/remove languages in this array
         ],
       },
     })
   );
-
   config = merge(
     // jhipster-needle-add-webpack-config - JHipster will add custom config
     config
   );
-
   return config;
 };

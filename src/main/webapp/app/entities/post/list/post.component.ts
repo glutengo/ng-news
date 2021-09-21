@@ -40,6 +40,7 @@ export class PostComponent implements OnInit {
         page: pageToLoad - 1,
         size: this.itemsPerPage,
         sort: this.sort(),
+        bypassCache: !dontNavigate,
       })
       .subscribe(
         (res: HttpResponse<IPost[]>) => {
